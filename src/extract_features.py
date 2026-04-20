@@ -21,7 +21,7 @@ MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "models", "face_landm
 
 # 3D face model points for PnP head pose
 MODEL_POINTS = np.array([
-    [0.0,    0.0,    0.0],    # nose tip (1)
+    [0.0,    0.0,    0.0],    # nose tip (4)
     [0.0,   -330.0, -65.0],   # chin (152)
     [-225.0, 170.0, -135.0],  # left eye corner (263)
     [225.0,  170.0, -135.0],  # right eye corner (33)
@@ -29,7 +29,7 @@ MODEL_POINTS = np.array([
     [150.0,  -150.0, -125.0], # right mouth corner (57)
 ], dtype=np.float64)
 
-LANDMARK_IDS = [1, 152, 263, 33, 287, 57]
+LANDMARK_IDS = [4, 152, 263, 33, 287, 57]
 
 MOUTH_TOP, MOUTH_BOTTOM = 13, 14
 EYE_TOP_L, EYE_BOT_L   = 386, 374
@@ -64,15 +64,16 @@ def get_head_pose(lm, h, w):
     cam  = np.array([[focal, 0, w / 2], [0, focal, h / 2], [0, 0, 1]], dtype=np.float64)
     dist = np.zeros((4, 1))
 
-    ok, rvec, _ = cv2.solvePnP(MODEL_POINTS, image_points, cam, dist,
-                                flags=cv2.SOLVEPNP_ITERATIVE)
+    ok, rvec, tvec = cv2.solvePnP(MODEL_POINTS, image_points, cam, dist,
+                                   flags=cv2.SOLVEPNP_ITERATIVE)
     if not ok:
         return np.nan, np.nan
 
     rmat, _ = cv2.Rodrigues(rvec)
-    sy = np.sqrt(rmat[0, 0] ** 2 + rmat[1, 0] ** 2)
-    pitch = np.degrees(np.arctan2(-rmat[2, 0], sy))
-    yaw   = np.degrees(np.arctan2(rmat[1, 0], rmat[0, 0])) if sy > 1e-6 else 0.0
+    proj = np.hstack((rmat, tvec.reshape(3, 1)))
+    _, _, _, _, _, _, euler = cv2.decomposeProjectionMatrix(proj)
+    pitch = float(euler[0])  # X rotation (nod up/down)
+    yaw   = float(euler[1])  # Y rotation (turn left/right)
     return yaw, pitch
 
 
