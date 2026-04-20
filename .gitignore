@@ -1,0 +1,90 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# =========================
+# Jupyter Notebooks
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# =========================
+# Data
+# =========================
+data/raw/
+data/interim/
+data/processed/
+data/frames/
+data/features/
+data/labels/
+
+# Keep folder structure but not contents
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+
+# =========================
+# Models
+# =========================
+models/*.joblib
+models/*.pkl
+models/*.h5
+models/*.pt
+
+# =========================
+# Outputs
+# =========================
+outputs/
+!outputs/.gitkeep
+
+# =========================
+# Logs / Temp
+# =========================
+*.log
+tmp/
+temp/
+
+# =========================
+# Media / Large Files
+# =========================
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.png
+*.jpg
+*.jpeg
+
+# !outputs/figures/*.png
+
+# =========================
+# LaTeX build files
+# =========================
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+
+# =========================
+# Mac / Misc
+# =========================
+*.swp
