@@ -16,9 +16,9 @@ from sklearn.metrics import (
 )
 
 CONDITION_THRESHOLDS = {
-    "yaw_angled": 15.0,       # |yaw| >= 15 deg → angled pose
-    "brightness_low": 127.0,  # mean brightness <= 127 → low light
-    "motion_high": 2.0,       # motion_mean >= threshold → high motion (calibrate later)
+    "yaw_angled": 15.0,       # |yaw| >= 15 deg → angled pose (principled frontal boundary)
+    "brightness_low": 115.0,  # brightness <= 115 → low light (p25 of 20260107-1; <=90 captured only 2%)
+    "motion_high": 5.3,       # motion_mean >= 5.3 → high motion (median of 20260107-1, ~50/50 split)
 }
 
 
@@ -67,18 +67,44 @@ def evaluate(model_dir, features_path, labels_path, model_name="logreg"):
             acc = accuracy_score(y[mask], pred[mask])
             print(f"  {val:10s}  n={mask.sum():5d}  F1={f1:.3f}  acc={acc:.3f}")
 
-    return {"video_id": video_id, "f1": f1_score(y, pred, zero_division=0),
-            "accuracy": accuracy_score(y, pred)}
+    # cross-condition breakdown: pose × true class (reveals where speaking frames are missed)
+    print("\n--- by pose_condition × true label ---")
+    label_names = {0: "silent", 1: "speaking"}
+    for pose_val in sorted(df["pose_condition"].unique()):
+        for true_label in [0, 1]:
+            mask = (df["pose_condition"] == pose_val) & (y == true_label)
+            if mask.sum() == 0:
+                continue
+            recall = (pred[mask] == true_label).mean()
+            print(f"  {pose_val:10s} + {label_names[true_label]:8s}  n={mask.sum():5d}  recall={recall:.3f}")
+
+    results = {
+        "video_id": video_id, "model": model_name,
+        "f1": round(f1_score(y, pred, zero_division=0), 4),
+        "accuracy": round(accuracy_score(y, pred), 4),
+    }
+    return results
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model",    required=True, help="Directory containing .joblib files")
-    parser.add_argument("--features", required=True)
-    parser.add_argument("--labels",   required=True)
+    parser.add_argument("--model",      required=True, help="Directory containing .joblib files")
+    parser.add_argument("--features",   required=True)
+    parser.add_argument("--labels",     required=True)
     parser.add_argument("--model_name", default="logreg", choices=["logreg", "svm"])
+    parser.add_argument("--results_out", default=None, help="CSV file to append results row to")
     args = parser.parse_args()
-    evaluate(args.model, args.features, args.labels, args.model_name)
+
+    results = evaluate(args.model, args.features, args.labels, args.model_name)
+
+    if args.results_out:
+        import csv
+        write_header = not os.path.exists(args.results_out)
+        with open(args.results_out, "a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=results.keys())
+            if write_header:
+                writer.writeheader()
+            writer.writerow(results)
 
 
 if __name__ == "__main__":
