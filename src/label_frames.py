@@ -43,6 +43,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--frames", required=True, help="Directory of .jpg frames")
     parser.add_argument("--output", required=True, help="Output CSV path")
+    parser.add_argument("--start",  type=int, default=None, help="Frame index to start from (overrides resume)")
     args = parser.parse_args()
 
     frame_files = sorted(
@@ -54,19 +55,28 @@ def main():
     labels = load_existing(args.output)
     already = len(labels)
 
-    # jump to first unlabeled
-    idx = 0
-    for i, fname in enumerate(frame_files):
-        fi = int(os.path.splitext(fname)[0])
-        if fi not in labels:
-            idx = i
-            break
+    if args.start is not None:
+        # find the position of the requested frame index in the sorted list
+        frame_indices = [int(os.path.splitext(f)[0]) for f in frame_files]
+        if args.start in frame_indices:
+            idx = frame_indices.index(args.start)
+        else:
+            # jump to nearest frame at or after the requested index
+            idx = next((i for i, fi in enumerate(frame_indices) if fi >= args.start), len(frame_files))
+        print(f"Loaded {already} existing labels. Starting at frame index {args.start} (position {idx}/{len(frame_files)}).")
     else:
-        idx = len(frame_files)  # all done
-
-    print(f"Loaded {already} existing labels. Resuming at frame #{idx}/{len(frame_files)}.")
+        # jump to first unlabeled
+        idx = 0
+        for i, fname in enumerate(frame_files):
+            fi = int(os.path.splitext(fname)[0])
+            if fi not in labels:
+                idx = i
+                break
+        else:
+            idx = len(frame_files)  # all done
+        print(f"Loaded {already} existing labels. Resuming at frame #{idx}/{len(frame_files)}.")
     cv2.namedWindow(WINDOW, cv2.WINDOW_NORMAL)
-    cv2.resizeWindow(WINDOW, 800, 600)
+    cv2.resizeWindow(WINDOW, 960, 720)
 
     while 0 <= idx < len(frame_files):
         fname = frame_files[idx]
@@ -75,6 +85,9 @@ def main():
         if img is None:
             idx += 1
             continue
+        h, w = img.shape[:2]
+        scale = min(960 / w, 720 / h)
+        img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
 
         existing = labels.get(frame_index, -1)
         status = f"{'SPEAKING' if existing == 1 else 'SILENT' if existing == 0 else 'unlabeled'}"
@@ -88,6 +101,9 @@ def main():
         cv2.imshow(WINDOW, overlay)
 
         key = cv2.waitKey(0) & 0xFF
+        # drain any buffered keypresses — pollKey() is non-blocking, returns -1 when empty
+        while cv2.pollKey() != -1:
+            pass
         if key == ord("1"):
             labels[frame_index] = 1
             idx += 1
