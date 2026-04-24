@@ -3,8 +3,6 @@
 **Project description:**
 This project investigates which hand-crafted facial features are stable and informative for speaking detection under natural appearance variation—lighting, head pose, and camera motion—in lecture video recordings. Using MediaPipe face landmarking, eight per-frame features are extracted (mouth openness, eye openness, yaw/pitch, motion statistics, brightness, landmark confidence) and used to train logistic regression and SVM classifiers on a single training recording. The model is then evaluated on 20 held-out recordings spanning a full semester. An ablation study shows that mouth openness alone matches the full-feature model, while a generalization study measures where and how performance degrades across appearance conditions.
 
-**Data and videos:** [Google Drive](https://drive.google.com/drive/folders/1uNjKqWlNc1-HNisCVDT7yt-KY3C7uWnN?usp=sharing)
-
 ---
 
 ## Overview
