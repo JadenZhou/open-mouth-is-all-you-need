@@ -47,12 +47,19 @@ models/*.joblib
 models/*.pkl
 models/*.h5
 models/*.pt
+models/*.task
 
 # =========================
-# Outputs
+# Outputs / Results
 # =========================
 outputs/
 !outputs/.gitkeep
+results/
+
+# =========================
+# Claude Code memory
+# =========================
+memory/
 
 # =========================
 # Logs / Temp
@@ -83,6 +90,11 @@ temp/
 *.log
 *.out
 *.toc
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.pdf
+report/figures/
 
 # =========================
 # Mac / Misc
