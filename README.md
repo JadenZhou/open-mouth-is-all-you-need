@@ -1,7 +1,9 @@
 # Open Mouth Is All You Need
 
+**[Read the report (PDF)](report/report.pdf)**
+
 **Project description:**
-This project investigates which hand-crafted facial features are stable and informative for speaking detection under natural appearance variation—lighting, head pose, and camera motion—in lecture video recordings. Using MediaPipe face landmarking, eight per-frame features are extracted (mouth openness, eye openness, yaw/pitch, motion statistics, brightness, landmark confidence) and used to train logistic regression and SVM classifiers on a single training recording. The model is then evaluated on 20 held-out recordings spanning a full semester. An ablation study shows that mouth openness alone matches the full-feature model, while a generalization study measures where and how performance degrades across appearance conditions.
+Which hand-crafted facial features remain informative for speaking detection when training and test data come from different recordings? This project trains an interpretable classifier on a single lecture video and evaluates out-of-sample generalization across 20 held-out recordings under varying lighting, head pose, and camera motion. Eight per-frame features are extracted with MediaPipe face landmarking (mouth openness, eye openness, yaw/pitch, motion statistics, brightness, landmark confidence) and used to train logistic regression and SVM classifiers. An ablation shows a single feature — mouth openness — matches the full 8-feature model, and a generalization study quantifies where and how performance degrades.
 
 ---
 
@@ -22,7 +24,7 @@ A single-subject, video-based study training on one lecture recording (`20260107
 **Requirements:** Python 3.x, CPU only (no GPU needed)
 
 ```bash
-pip install opencv-python mediapipe numpy pandas scikit-learn joblib
+pip install -r requirements.txt
 ```
 
 You also need the MediaPipe face landmarker model file:
@@ -32,11 +34,13 @@ wget -q -O models/face_landmarker.task \
   https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task
 ```
 
+The pipeline also downloads this file on first run if it's missing.
+
 ---
 
 ## Data
 
-Raw videos and extracted data are **not included** in this repository (large files). See the Google Drive link submitted to Gradescope for the full dataset.
+Raw videos and intermediate artifacts are **not included** in this repository (single-subject lecture recordings, not publicly redistributable). The pipeline below documents how to reproduce on your own footage.
 
 ```
 data/
@@ -160,15 +164,32 @@ Tests whether adding N={25, 50, 100} labeled frames from each test video recover
 
 ## Results
 
-Pre-computed results are in `results/`:
+Headline numbers:
+
+| Setting | F1 |
+|---|---|
+| Logistic regression, all 8 features (5-fold CV on train video) | 0.881 |
+| Logistic regression, mouth openness only (5-fold CV) | **0.883** |
+| Logistic regression, all features minus mouth (5-fold CV) | 0.705 |
+| Cross-video evaluation, 17 evaluable test recordings | 0.848 ± 0.05 (range 0.750–0.950) |
+
+Generalization across the 20 test recordings, grouped by appearance condition:
+
+![Generalization across test videos](report/figures/generalization.pdf)
+
+Ablation across feature subsets:
+
+![Ablation across feature subsets](report/figures/ablation.pdf)
+
+Pre-computed result tables are in [`results/`](results/):
 
 | File | Contents |
 |---|---|
-| `results/ablation.csv` | 5-fold CV F1 per feature subset × model |
-| `results/generalization.csv` | Per-video F1/accuracy + per-condition breakdown |
-| `results/finetuning.csv` | Fine-tuning F1 vs. baseline at N=25/50/100 |
+| [`results/ablation.csv`](results/ablation.csv) | 5-fold CV F1 per feature subset × model |
+| [`results/generalization.csv`](results/generalization.csv) | Per-video F1/accuracy + per-condition breakdown |
+| [`results/finetuning.csv`](results/finetuning.csv) | Fine-tuning F1 vs. baseline at N=25/50/100 |
 
-Report figures are in `report/figures/`. The compiled report PDF is `report/report.pdf`.
+Trained classifiers are in [`models/`](models/) (`logreg.joblib`, `svm.joblib`). The compiled report PDF is at [`report/report.pdf`](report/report.pdf).
 
 ---
 
@@ -187,7 +208,7 @@ Calibrated on `20260107-1` distribution (documented in `docs/thresholds.md`):
 ## Repository Structure
 
 ```
-face-features/
+open-mouth-is-all-you-need/
 ├── src/
 │   ├── find_crop.py          # interactive crop endpoint finder
 │   ├── extract_frames.py     # frame extraction from video
@@ -202,7 +223,7 @@ face-features/
 ├── models/
 │   ├── logreg.joblib         # trained logistic regression pipeline
 │   ├── svm.joblib            # trained SVM pipeline
-│   └── face_landmarker.task  # MediaPipe model file
+│   └── face_landmarker.task  # MediaPipe model file (fetched on first run)
 ├── results/
 │   ├── ablation.csv
 │   ├── generalization.csv
@@ -210,7 +231,15 @@ face-features/
 ├── report/
 │   ├── report.tex
 │   ├── report.pdf
+│   ├── gen_figures.py        # regenerates report figures from results/
 │   └── figures/
-└── docs/
-    └── thresholds.md
+├── docs/
+│   └── thresholds.md
+├── LICENSE
+├── requirements.txt
+└── README.md
 ```
+
+---
+
+Northeastern University, Spring 2026 coursework (CS5330).
