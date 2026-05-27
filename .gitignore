@@ -26,7 +26,14 @@ Thumbs.db
 .idea/
 
 # =========================
-# Data
+# Claude Code
+# =========================
+.claude/
+CLAUDE.md
+memory/
+
+# =========================
+# Data (large, not redistributable)
 # =========================
 data/raw/
 data/interim/
@@ -35,31 +42,17 @@ data/frames/
 data/features/
 data/labels/
 
-# Keep folder structure but not contents
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/processed/.gitkeep
 
 # =========================
-# Models
+# Models — track trained classifiers, ignore the MediaPipe model file
 # =========================
-models/*.joblib
+models/*.task
 models/*.pkl
 models/*.h5
 models/*.pt
-models/*.task
-
-# =========================
-# Outputs / Results
-# =========================
-outputs/
-!outputs/.gitkeep
-results/
-
-# =========================
-# Claude Code memory
-# =========================
-memory/
 
 # =========================
 # Logs / Temp
@@ -69,32 +62,32 @@ tmp/
 temp/
 
 # =========================
-# Media / Large Files
+# Media — ignore source videos / frames, but allow figures
 # =========================
 *.mp4
 *.avi
 *.mov
 *.mkv
-*.png
-*.jpg
-*.jpeg
-
-# !outputs/figures/*.png
 
 # =========================
-# LaTeX build files
+# Presentation (slides not tracked)
+# =========================
+report/presentation.tex
+report/presentation*.pdf
+report/presentation.nav
+report/presentation.snm
+report/presentation.toc
+
+# =========================
+# LaTeX build artifacts
 # =========================
 *.aux
 *.bbl
 *.blg
-*.log
 *.out
-*.toc
 *.fdb_latexmk
 *.fls
 *.synctex.gz
-*.pdf
-report/figures/
 
 # =========================
 # Mac / Misc
