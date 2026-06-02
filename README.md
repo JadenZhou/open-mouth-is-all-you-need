@@ -175,11 +175,11 @@ Headline numbers:
 
 Generalization across the 20 test recordings, grouped by appearance condition:
 
-![Generalization across test videos](report/figures/generalization.pdf)
+![Generalization across test videos](report/figures/generalization.png)
 
 Ablation across feature subsets:
 
-![Ablation across feature subsets](report/figures/ablation.pdf)
+![Ablation across feature subsets](report/figures/ablation.png)
 
 Pre-computed result tables are in [`results/`](results/):
 
