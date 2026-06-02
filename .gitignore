@@ -37,14 +37,12 @@ memory/
 # =========================
 data/raw/
 data/interim/
-data/processed/
 data/frames/
 data/features/
 data/labels/
 
 !data/raw/.gitkeep
 !data/interim/.gitkeep
-!data/processed/.gitkeep
 
 # =========================
 # Models — track trained classifiers, ignore the MediaPipe model file
